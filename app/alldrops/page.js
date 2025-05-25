@@ -8,23 +8,8 @@ import AllDropsCard from "../../components/Alldrops"
 export default function Drops() {
   const [allDrops, setAllDrops] = useState([])
   
-  useEffect(() => {
-    const fetchAllDrops = async () => {
-      const res = await getAllDrops()
-      console.log("all orders are ", res.length)
-      setAllDrops(res)
-    }
-    fetchAllDrops()
-  }, [])
-  
-  useEffect(() => {
-    if (allDrops.length > 0) {
-      console.log("Updated allDrops: ", allDrops);
-    }
-  }, [allDrops]);
-
-  // Mock data for the two new 20 CHZ items
-  const featuredItems = [
+  // Mock data for the two new 20 CHZ items with state management
+  const [featuredItems, setFeaturedItems] = useState([
     {
       id: 'featured-1',
       name: 'Limited Edition Sneakers',
@@ -41,7 +26,32 @@ export default function Drops() {
       description: 'Special fan token package',
       stock: 200
     }
-  ];
+  ]);
+
+  const handleBuyNow = (itemId) => {
+    setFeaturedItems(prevItems => 
+      prevItems.map(item => 
+        item.id === itemId && item.stock > 0
+          ? { ...item, stock: item.stock - 1 }
+          : item
+      )
+    );
+  };
+  
+  useEffect(() => {
+    const fetchAllDrops = async () => {
+      const res = await getAllDrops()
+      console.log("all orders are ", res.length)
+      setAllDrops(res)
+    }
+    fetchAllDrops()
+  }, [])
+  
+  useEffect(() => {
+    if (allDrops.length > 0) {
+      console.log("Updated allDrops: ", allDrops);
+    }
+  }, [allDrops]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
@@ -103,8 +113,16 @@ export default function Drops() {
                     <span className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400">
                       {item.price}
                     </span>
-                    <button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-6 py-2 rounded-xl transition-all duration-300 hover:scale-105 font-medium">
-                      Buy Now
+                    <button 
+                      onClick={() => handleBuyNow(item.id)}
+                      disabled={item.stock === 0}
+                      className={`${
+                        item.stock === 0 
+                          ? 'bg-gray-600 cursor-not-allowed' 
+                          : 'bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 hover:scale-105'
+                      } text-white px-6 py-2 rounded-xl transition-all duration-300 font-medium`}
+                    >
+                      {item.stock === 0 ? 'Sold Out' : 'Buy Now'}
                     </button>
                   </div>
                 </div>
